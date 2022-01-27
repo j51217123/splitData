@@ -54,7 +54,7 @@ defaultJson = defaultJson.map(item => {
         .split(/^([a-zA-Z]+)|(\d+)|\s|./gi)
         .filter(str => str);
 
-    console.log(firstSplitRes, "firstSplitRes");
+    // console.log(firstSplitRes, "firstSplitRes");
     const obj = {
         規格: firstSplitRes[0],
         規格1: firstSplitRes[1],
@@ -100,29 +100,29 @@ function App() {
         // 備註 2：Excel 的單位可從大到小分為 Workbook Object > Worksheet Object > Cell Object
         // 詳細可參考：https://zhuanlan.zhihu.com/p/257845606
 
+        console.log(saveData, "save");
+        const data = saveData.map(item => {
+            const firstSplitRes = Object.values(item)[0]
+                .split(/^([a-zA-Z]+)|(\d+)|\s|./gi)
+                .filter(str => str);
+
+            return {
+                規格: firstSplitRes[0],
+                規格1: firstSplitRes[1],
+                規格2: firstSplitRes[2],
+                規格3: firstSplitRes[3],
+                規格4: firstSplitRes[4],
+                規格5: firstSplitRes[5],
+            };
+        });
 
         // 自訂表頭
-        const newTitleData = [
-            titleDisplay,
-            ...saveData.map(item => {
-                const firstSplitRes = Object.values(item)[0]
-                    .split(/^([a-zA-Z]+)|(\d+)|\s|./gi)
-                    .filter(str => str);
-
-                return {
-                    規格: firstSplitRes[0],
-                    規格1: firstSplitRes[1],
-                    規格2: firstSplitRes[2],
-                    規格3: firstSplitRes[3],
-                    規格4: firstSplitRes[4],
-                    規格5: firstSplitRes[5],
-                };
-            }),
-        ];
+        const newTitleData = [titleDisplay, ...data];
 
         // 宣告 Worksheet Object
         const worksheet = XLSX.utils.json_to_sheet(newTitleData, {
             header: title,
+            blankrows: true,
             skipHeader: true,
         });
 
@@ -163,49 +163,33 @@ function App() {
         const { files } = file.target;
         // 通過FileReader對象讀取文件
         const fileReader = new FileReader();
+
         fileReader.onload = event => {
             try {
                 const { result } = event.target;
                 // 以二進制流方式讀取得到整份excel表格對象
                 const workbook = XLSX.read(result, { type: "binary" });
-                let data = []; // 存儲獲取到的數據
+                // let data = []; // 存儲獲取到的數據
                 // 遍歷每張工作表進行讀取（這里默認只讀取第一張表）
                 for (const sheet in workbook.Sheets) {
                     if (workbook.Sheets.hasOwnProperty(sheet)) {
                         // 利用 sheet_to_json 方法將 excel 轉成 json 數據
-                        data = data.concat(XLSX.utils.sheet_to_json(workbook.Sheets[sheet]));
+                        // data = data.concat(XLSX.utils.sheet_to_json(workbook.Sheets[sheet]));
+                        let data = XLSX.utils.sheet_to_json(workbook.Sheets[sheet], {
+                            header: 1,
+                            blankRows: true,
+                            defval: "",
+                        });
                         // break; // 如果只取第一張表，就取消注釋這行
+                        setSaveData(data);
+                        console.log(data);
                     }
                 }
-                console.log(data);
-                setSaveData(data);
-
-                // data.map(item => {
-                //     const firstSplitRes = Object.values(item)[0]
-                //     .split(/^([a-zA-Z]+)|(\d+)|\s|./gi).filter(str => str);
-
-                //     console.log(firstSplitRes, "firstSplitRes");
-                //     const obj = {
-                //         規格: firstSplitRes[0],
-                //         規格1: firstSplitRes[1],
-                //         規格2: firstSplitRes[2],
-                //         規格3: firstSplitRes[3],
-                //         規格4: firstSplitRes[4],
-                //         規格5: firstSplitRes[5],
-                //     };
-
-                //     return {
-                //         規格: firstSplitRes[0],
-                //         規格1: firstSplitRes[1],
-                //         規格2: firstSplitRes[2],
-                //         規格3: firstSplitRes[3],
-                //         規格4: firstSplitRes[4],
-                //         規格5: firstSplitRes[5],
-                //     };
-                // });
+                alert("檔案已上傳成功，請下載新的 Excel 檔案");
             } catch (e) {
                 // 這里可以拋出文件類型錯誤不正確的相關提示
                 console.log("文件類型不正確");
+                alert("上傳發生錯誤!");
                 return;
             }
         };
@@ -217,14 +201,35 @@ function App() {
         <div className="App">
             <header className="App-header">
                 <img src={logo} className="App-logo" alt="logo" />
-                <button onClick={() => handleDownloadExcel(saveData)}>Download Excel</button>
-                <input
-                    type="file"
-                    accept=".xlsx, .xls"
-                    onChange={e => {
-                        handleImportExcel(e);
-                    }}
-                />
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <button
+                        onClick={() => handleDownloadExcel(saveData)}
+                        style={{ cursor: "pointer", marginRight: "15px", borderRadius: "4px" }}>
+                        Download Excel
+                    </button>
+                    <form style={{ height: "100%", fontSize: "16px" }}>
+                        <label
+                            for="file"
+                            style={{
+                                cursor: "pointer",
+                                color: "black",
+                                background: "white",
+                                height: "22px",
+                                padding: "2px",
+                                borderRadius: "4px",
+                            }}>
+                            檔案上傳
+                        </label>
+                        <input
+                            style={{ display: "none" }}
+                            id="file"
+                            type="file"
+                            onChange={e => {
+                                handleImportExcel(e);
+                            }}
+                        />
+                    </form>
+                </div>
             </header>
         </div>
     );
