@@ -6,6 +6,7 @@ import * as XLSXStyle from "xlsx-style";
 import { saveAs } from "file-saver";
 import ExcelUtil from "./ExcelUtil";
 import React, { useState, useEffect } from "react";
+import thousands from "thousands";
 
 console.log(XLSX, XLSXStyle);
 
@@ -99,12 +100,12 @@ function App() {
         //        新增 config-overrides.js 去解決，Vue 可透過 Vue.config.js 或 Webpack.config.js
         // 備註 2：Excel 的單位可從大到小分為 Workbook Object > Worksheet Object > Cell Object
         // 詳細可參考：https://zhuanlan.zhihu.com/p/257845606
-
-        console.log(saveData, "save");
+        console.log(saveData,'save')
         const data = saveData.map(item => {
-            const firstSplitRes = Object.values(item)[0]
-                .split(/^([a-zA-Z]+)|(\d+)|\s|./gi)
-                .filter(str => str);
+            let firstSplitRes = Object.values(item)[0]
+                // .split(/^([a-zA-Z]+)|(\d+)|\s|./gi)
+                .split(/^([a-zA-Z]+)|([\d\\.?]+)|\s|/gi)
+                .filter( str => str !== undefined && str !== '' && str !== '*' && str !== 'M');
 
             return {
                 規格: firstSplitRes[0],
@@ -135,6 +136,7 @@ function App() {
             alignment: {
                 horizontal: "center",
             },
+            numFmt: '0.00',
         };
 
         // 宣告 Workbook Object
@@ -179,6 +181,7 @@ function App() {
                             header: 1,
                             blankRows: true,
                             defval: "",
+                            raw: false
                         });
                         // break; // 如果只取第一張表，就取消注釋這行
                         setSaveData(data);
