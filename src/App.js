@@ -44,18 +44,20 @@ const titleDisplay = {
 // ];
 
 let defaultJson = [
-    { 規格: "RH400X400X13X21*5934" },
-    { 規格: "PL36*600*600" },
-    { 規格: "STUD 19*76" },
-    { 規格: "HSB M 20*60" },
+    { 規格: "RH400X400X13X21*5934        " },
+    { 規格: "PL36*600*600         " },
+    { 規格: " STUD 19*115                                           " },
+    { 規格: " HSB M 24*65                                           " },
 ];
 
 defaultJson = defaultJson.map(item => {
     const firstSplitRes = Object.values(item)[0]
-        .split(/^([a-zA-Z]+)|(\d+)|\s|./gi)
-        .filter(str => str);
+        .trim()
+        .split(/([a-zA-Z]+|[0-9]+(?:\.[0-9]+)?|\S)/)
+        .filter(str => str !== '' && str !== '*' && !str.match(/^\s+$/));
 
-    // console.log(firstSplitRes, "firstSplitRes");
+
+    console.log(firstSplitRes, "firstSplitRes");
     const obj = {
         規格: firstSplitRes[0],
         規格1: firstSplitRes[1],
@@ -100,13 +102,14 @@ function App() {
         //        新增 config-overrides.js 去解決，Vue 可透過 Vue.config.js 或 Webpack.config.js
         // 備註 2：Excel 的單位可從大到小分為 Workbook Object > Worksheet Object > Cell Object
         // 詳細可參考：https://zhuanlan.zhihu.com/p/257845606
-        console.log(saveData,'save')
+        // console.log(saveData,'save')
         const data = saveData.map(item => {
             let firstSplitRes = Object.values(item)[0]
-                // .split(/^([a-zA-Z]+)|(\d+)|\s|./gi)
-                .split(/^([a-zA-Z]+)|([\d\\.?]+)|\s|/gi)
-                .filter( str => str !== undefined && str !== '' && str !== '*' && str !== 'M');
+            .trim()
+            .split(/([a-zA-Z]+|[0-9]+(?:\.[0-9]+)?|\S)/)
+            .filter(str => str !== '' && str !== '*' && str !== 'M' && !str.match(/^\s+$/));
 
+            const test = []
             return {
                 規格: firstSplitRes[0],
                 規格1: firstSplitRes[1],
@@ -188,7 +191,8 @@ function App() {
                         console.log(data);
                     }
                 }
-                alert("檔案已上傳成功，請下載新的 Excel 檔案");
+                // alert("檔案已上傳成功，請下載新的 Excel 檔案");
+                alert("哆啦聯盟副會長 您的資料已上傳成功!");
             } catch (e) {
                 // 這里可以拋出文件類型錯誤不正確的相關提示
                 console.log("文件類型不正確");
